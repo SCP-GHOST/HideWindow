@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <RootNamespace>HideWindow</RootNamespace>
+    <AssemblyName>HideWindow</AssemblyName>
+    <ResourceLanguage>zh-Hans</ResourceLanguage>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="skin/**">
+      <LogicalName>HideWindow.Skin.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <Resource Include="Assets/Fonts/*.otf"/>
+  </ItemGroup>
+
+</Project>

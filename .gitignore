@@ -1,0 +1,60 @@
+# .NET
+**/bin/**
+**/obj/**
+[Bb]uild/
+[Ll]og/
+out/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+project.nuget.cache
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Visual Studio
+.vs/
+.vscode/
+*.userprefs
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+# Rider
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+.DS_Store
+~$*
+
+# Publish output (self-contained)
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# Logs
+*.log
+
+# Keep the published output under bin/publish committed
+!/bin/publish/
+!/bin/publish/**

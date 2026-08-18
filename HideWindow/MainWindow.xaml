@@ -1,0 +1,562 @@
+<Window x:Class="HideWindow.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HideWindow.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        mc:Ignorable="d"
+        Title="窗口透明度控制器" Height="360" Width="450"
+        MinWidth="450" MinHeight="360"
+        ResizeMode="CanResize"
+        WindowStyle="None"
+        Background="#FF110F0E"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32"
+                            ResizeBorderThickness="6"
+                            GlassFrameThickness="0"
+                            CornerRadius="0"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+    <Window.Resources>
+        <DataTemplate x:Key="OutlinedText">
+            <controls:OutlinedTextBlock Text="{Binding}"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="OutlinedTextOnGold">
+            <controls:OutlinedTextBlock Text="{Binding}"
+                                        Foreground="#241F16"
+                                        Stroke="Transparent"
+                                        StrokeThickness="0"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="WindowItemTemplate">
+            <controls:OutlinedTextBlock Text="{Binding Title}"/>
+        </DataTemplate>
+
+        <!-- 基础文字:奶油色填充 + 深色描边(参考 Deadlock Mod Manager 前景色) -->
+        <Style TargetType="{x:Type controls:OutlinedTextBlock}">
+            <Setter Property="Foreground" Value="#F9F7EF"/>
+            <Setter Property="Stroke" Value="#0D0B09"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+        </Style>
+
+        <!-- 次要按钮:深暖灰底 + 金色细边框 -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2D2B25"/>
+            <Setter Property="Foreground" Value="#F9F7EF"/>
+            <Setter Property="BorderBrush" Value="#66EFE0BE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="/HideWindow;component/Assets/Fonts/#Forevs Demo"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3A372F"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#211F1A"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#FFEFE0BE"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 主按钮:金色底 + 深色文字 -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#EFE0BE"/>
+            <Setter Property="Foreground" Value="#241F16"/>
+            <Setter Property="BorderBrush" Value="#E8D9A9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="/HideWindow;component/Assets/Fonts/#Forevs Demo"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F6EAD0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#D9C89B"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#FF241F16"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 标题栏窗口控制按钮:透明背景,默认 60% 奶油色,悬停变金色(参考 deadlock window-titlebar) -->
+        <Style x:Key="CaptionButton" TargetType="Button">
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#99F9F7EF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#FFEFE0BE"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 下拉框:深暖灰底 + 金色边框,展开列表暖黑底 -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#2D2B25"/>
+            <Setter Property="Foreground" Value="#F9F7EF"/>
+            <Setter Property="BorderBrush" Value="#66EFE0BE"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="/HideWindow;component/Assets/Fonts/#Forevs Demo"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Chrome"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="2">
+                                <Grid>
+                                    <ToggleButton x:Name="ToggleButton"
+                                                  Focusable="False" ClickMode="Press"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      Margin="6,0,26,0"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                      IsHitTestVisible="False"/>
+                                    <controls:OutlinedTextBlock Text="&#x25BE;"
+                                                                FontSize="10"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,8,0"
+                                                                IsHitTestVisible="False"/>
+                                </Grid>
+                            </Border>
+                            <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                                <Border x:Name="DropDownBorder"
+                                        MinWidth="{TemplateBinding ActualWidth}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Background="#F21A1712"
+                                        BorderBrush="#66EFE0BE"
+                                        BorderThickness="1"
+                                        CornerRadius="2">
+                                    <ScrollViewer>
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#3A372F"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#211F1A"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#FFEFE0BE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="#F9F7EF"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33EFE0BE"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#22EFE0BE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 滑条:金色轨道/滑块 -->
+        <Style TargetType="Slider">
+            <Setter Property="Background" Value="#2D2B25"/>
+            <Setter Property="Foreground" Value="#EFE0BE"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="14" VerticalAlignment="Center">
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Slider}}"
+                                                        CornerRadius="3" Height="6" VerticalAlignment="Center"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="{Binding Background, RelativeSource={RelativeSource AncestorType=Slider}}"
+                                                        CornerRadius="3" Height="6" VerticalAlignment="Center"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Slider}}"
+                                                         Stroke="#110F0E" StrokeThickness="1.5"
+                                                         Width="14" Height="14"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 滚动条:6px 细条,透明轨道,金色圆角滑块(参考 deadlock scrollbar) -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="MinWidth" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border x:Name="Bd" Background="#59EFE0BE"
+                                                        CornerRadius="3" Margin="0,1"/>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#8CEFE0BE"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#B3EFE0BE"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 背景图片层 -->
+        <Image Grid.RowSpan="2" x:Name="BgImage" Stretch="UniformToFill"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               ClipToBounds="True"/>
+
+        <!-- 暖色暗化遮罩层 -->
+        <Rectangle Grid.RowSpan="2" x:Name="DarkenOverlay" Fill="#A6000000"/>
+
+        <!-- 自绘标题栏 -->
+        <Border Grid.Row="0"
+                Background="#FF110F0E"
+                BorderBrush="#FF262626"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <!-- 品牌 logo:窗口 + 淡化线条(呼应透明度控制器) -->
+                    <Path Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"
+                          Stroke="#EFE0BE" StrokeThickness="1.5" StrokeLineJoin="Round">
+                        <Path.Data>
+                            <GeometryGroup>
+                                <PathGeometry Figures="M 3,5.5 A 2.5,2.5 0 0 1 5.5,3 L 10.5,3 A 2.5,2.5 0 0 1 13,5.5 L 13,10.5 A 2.5,2.5 0 0 1 10.5,13 L 5.5,13 A 2.5,2.5 0 0 1 3,10.5 Z"/>
+                                <PathGeometry Figures="M 5,7.5 L 11,7.5 M 5,10 L 9.5,10"/>
+                            </GeometryGroup>
+                        </Path.Data>
+                    </Path>
+                    <controls:OutlinedTextBlock Text="窗口透明度控制器"
+                                                FontFamily="/HideWindow;component/Assets/Fonts/#Forevs Demo"
+                                                FontWeight="Bold" FontSize="13"
+                                                Margin="7,0,0,0"
+                                                VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="MinimizeButton"
+                            Style="{StaticResource CaptionButton}"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="MinimizeButton_Click"
+                            ToolTip="最小化">
+                        <Path Data="M 2.5,6.5 L 9.5,6.5"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.75"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Width="12" Height="12"/>
+                    </Button>
+                    <Button x:Name="MaximizeButton"
+                            Style="{StaticResource CaptionButton}"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="MaximizeButton_Click"
+                            ToolTip="最大化/还原">
+                        <Grid Width="12" Height="12">
+                            <Path x:Name="MaximizeIcon"
+                                  Data="M 2.625,4.125 A 1.5,1.5 0 0 1 4.125,2.625 L 7.875,2.625 A 1.5,1.5 0 0 1 9.375,4.125 L 9.375,8.875 A 1.5,1.5 0 0 1 7.875,10.375 L 4.125,10.375 A 1.5,1.5 0 0 1 2.625,8.875 Z"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.75"/>
+                            <Path x:Name="RestoreIcon"
+                                  Visibility="Collapsed"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.75"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round">
+                                <Path.Data>
+                                    <GeometryGroup>
+                                        <PathGeometry Figures="M 4,4 V 3.25 A 1.25,1.25 0 0 1 5.25,2 H 8.75 A 1.25,1.25 0 0 1 10,3.25 V 6.75 A 1.25,1.25 0 0 1 8.75,8 H 8"/>
+                                        <PathGeometry Figures="M 2,5.25 A 1.25,1.25 0 0 1 3.25,4 L 6.75,4 A 1.25,1.25 0 0 1 8,5.25 L 8,8.75 A 1.25,1.25 0 0 1 6.75,10 L 3.25,10 A 1.25,1.25 0 0 1 2,8.75 Z"/>
+                                    </GeometryGroup>
+                                </Path.Data>
+                            </Path>
+                        </Grid>
+                    </Button>
+                    <Button x:Name="CloseButton"
+                            Style="{StaticResource CaptionButton}"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="CloseButton_Click"
+                            ToolTip="关闭">
+                        <Path Data="M 3,3 L 9,9 M 9,3 L 3,9"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.75"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Width="12" Height="12"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 内容层 -->
+        <StackPanel Grid.Row="1" Margin="16">
+            <!-- 选择模式切换 -->
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <controls:OutlinedTextBlock Grid.Column="0" Text="选择模式:" VerticalAlignment="Center"
+                                            FontFamily="/HideWindow;component/Assets/Fonts/#Forevs Demo"
+                                            FontWeight="Bold" FontSize="12" Margin="0,0,8,0"/>
+                <ComboBox x:Name="SelectModeCombo" Grid.Column="1"
+                          SelectedIndex="0" SelectionChanged="SelectModeCombo_SelectionChanged"
+                          FontSize="12" VerticalContentAlignment="Center" Height="24">
+                    <ComboBoxItem>
+                        <controls:OutlinedTextBlock Text="点击下一个"/>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <controls:OutlinedTextBlock Text="预选"/>
+                    </ComboBoxItem>
+                </ComboBox>
+            </Grid>
+
+            <!-- 预选窗口列表 -->
+            <Grid x:Name="PresetPanel" Margin="0,0,0,10" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <controls:OutlinedTextBlock Grid.Column="0" Text="窗口:" VerticalAlignment="Center"
+                                                FontFamily="/HideWindow;component/Assets/Fonts/#Forevs Demo"
+                                                FontWeight="Bold" FontSize="12" Margin="0,0,8,0"/>
+                    <Button Grid.Column="1" Content="刷新" HorizontalAlignment="Right"
+                            ContentTemplate="{StaticResource OutlinedText}"
+                            Click="RefreshWindowList_Click"
+                            Padding="8,2" FontSize="12" Height="24" VerticalContentAlignment="Center"/>
+                </Grid>
+                <ScrollViewer Grid.Row="1" MaxHeight="84" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="WindowSelectorList"/>
+                </ScrollViewer>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                    <Button x:Name="RemoveWindowButton" Content="−"
+                            ContentTemplate="{StaticResource OutlinedText}"
+                            Click="RemoveWindowButton_Click"
+                            Width="26" Height="24" FontSize="14" Padding="0" VerticalContentAlignment="Center"/>
+                    <controls:OutlinedTextBlock x:Name="WindowCountText"
+                                                Text="1/10" FontSize="11"
+                                                VerticalAlignment="Center" Margin="10,0,10,0"/>
+                    <Button x:Name="AddWindowButton" Content="+"
+                            ContentTemplate="{StaticResource OutlinedText}"
+                            Click="AddWindowButton_Click"
+                            Width="26" Height="24" FontSize="14" Padding="0" VerticalContentAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 透明度滑动条(点击下一个模式使用) -->
+            <StackPanel x:Name="GlobalOpacitySection">
+                <controls:OutlinedTextBlock Text="窗口透明度"
+                                            FontFamily="/HideWindow;component/Assets/Fonts/#Forevs Demo"
+                                            FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="OpacitySlider"
+                            Grid.Column="0"
+                            Minimum="1" Maximum="100"
+                            Value="50"
+                            TickFrequency="10"
+                            IsSnapToTickEnabled="False"
+                            VerticalAlignment="Center"
+                            ValueChanged="OpacitySlider_ValueChanged"/>
+                    <controls:OutlinedTextBlock x:Name="OpacityText"
+                                                Grid.Column="1"
+                                                Text="50%"
+                                                Width="40"
+                                                TextAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Margin="8,0,0,0"
+                                                FontFamily="/HideWindow;component/Assets/Fonts/#Forevs Demo"
+                                                FontSize="13"/>
+                </Grid>
+            </StackPanel>
+            <Button x:Name="BlurButton"
+                    Content="虚化"
+                    Style="{StaticResource PrimaryButton}"
+                    ContentTemplate="{StaticResource OutlinedTextOnGold}"
+                    Click="BlurButton_Click"
+                    Margin="0,12,0,0"
+                    Padding="16,8"
+                    FontSize="13"
+                    HorizontalAlignment="Stretch"/>
+            <controls:OutlinedTextBlock x:Name="StatusText"
+                                        Margin="0,8,0,0"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"
+                                        Text="点击「虚化」后,再点击任意窗口即可将其变为透明"/>
+        </StackPanel>
+
+        <!-- 四角金色装饰(参考 Nightshift/Bloodmoon 主题的角落风格) -->
+        <Path Grid.Row="1" Width="16" Height="16" Data="M 4,12 L 4,4 L 12,4"
+              Stroke="#99EFE0BE" StrokeThickness="2"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+              HorizontalAlignment="Left" VerticalAlignment="Top"
+              Margin="4,4,0,0" IsHitTestVisible="False"/>
+        <Path Grid.Row="1" Width="16" Height="16" Data="M 12,12 L 12,4 L 4,4"
+              Stroke="#99EFE0BE" StrokeThickness="2"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+              HorizontalAlignment="Right" VerticalAlignment="Top"
+              Margin="0,4,4,0" IsHitTestVisible="False"/>
+        <Path Grid.RowSpan="2" Width="16" Height="16" Data="M 4,4 L 4,12 L 12,12"
+              Stroke="#99EFE0BE" StrokeThickness="2"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+              HorizontalAlignment="Left" VerticalAlignment="Bottom"
+              Margin="4,0,0,4" IsHitTestVisible="False"/>
+        <Path Grid.RowSpan="2" Width="16" Height="16" Data="M 12,4 L 12,12 L 4,12"
+              Stroke="#99EFE0BE" StrokeThickness="2"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Margin="0,0,4,4" IsHitTestVisible="False"/>
+    </Grid>
+</Window>
