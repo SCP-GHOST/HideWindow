@@ -1,5 +1,8 @@
 # 窗口透明度控制器
 
+
+![:SCPGHOST-hide](https://count.getloli.com/@SCPGHOST-hide?name=SCPGHOST-hide&theme=rule34&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+
 一个轻量的 Windows 桌面工具,用于将任意窗口设置为指定透明度。
 
 ## 功能
